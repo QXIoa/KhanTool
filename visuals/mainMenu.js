@@ -14,12 +14,12 @@ if (!window.features) {
 }
 
 const topPanel = document.createElement('div');
-topPanel.style.cssText = "position:fixed;top:22px;left:30px;width:310px;height:60px;background:linear-gradient(94deg,#2196f3 0%,#176bd7 60%,#93cdfa 100%);z-index:10500;box-shadow:0 6px 20px #2196f667;display:flex;align-items:center;border-radius:15px;user-select:none;cursor:move;padding:0 24px 0 22px;gap:16px;";
+topPanel.style.cssText = "position:fixed;top:22px;left:30px;width:310px;height:60px;background:linear-gradient(94deg,#2196f3 0%,#176bd7 60%,#93cdfa 100%);z-index:10500;box-shadow:0 6px 20px #2196f667;display:flex;align-items:center;border-radius:15px;user-select:none;cursor:pointer;padding:0 24px 0 22px;gap:16px;";
 topPanel.innerHTML =
   `<img src="${logoUrl}" style="height:44px;width:44px;border-radius:15px;flex-shrink:0;box-shadow:0 4px 22px #176bd780;">
    <div style="display:flex;flex-direction:column;gap:6px;">
       <span style="font-size:1.37rem;color:#f6fcff;font-weight:900;letter-spacing:.10em;text-shadow:0 3px 22px #176bd768;">KHANTOOL</span>
-      <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Desenvolvido por One Prism</span>
+      <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Painel autoral</span>
    </div>`;
 
 const discordIcon = document.createElement('img');
@@ -133,7 +133,6 @@ topPanel.addEventListener('mousedown', function(e) {
     isDragging = true;
     dragStarted = false;
     dragOffset = [e.clientX - topPanel.offsetLeft, e.clientY - topPanel.offsetTop];
-    topPanel.style.cursor = "grabbing";
     document.body.style.userSelect = "none";
     
     if (clickTimer) {
@@ -167,7 +166,6 @@ document.addEventListener('mouseup', function() {
     const wasDragStarted = dragStarted;
     isDragging = false;
     dragStarted = false;
-    topPanel.style.cursor = "move";
     topPanel.style.boxShadow = "0 6px 20px #2196f667";
     document.body.style.userSelect = "";
     
