@@ -24,7 +24,7 @@ topPanel.innerHTML =
 
 const discordIcon = document.createElement('img');
 discordIcon.src = discordUrl;
-discordIcon.style.cssText = "height:22px;width:22px;margin-left:auto;cursor:pointer;display:block;border-radius:5px;background:#e3f2ff;padding:2px;box-shadow:0 1.5px 6px #c1dcfa50;opacity:.78;transition:box-shadow .12s, opacity .15s;";
+discordIcon.style.cssText = "height:22px;width:22px;margin-left:auto;cursor:pointer;display:block;border-radius:5px;padding:2px;box-shadow:0 1.5px 6px #c1dcfa50;opacity:.78;transition:box-shadow .12s, opacity .15s;";
 discordIcon.onmouseover = function(){discordIcon.style.opacity=".98";};
 discordIcon.onmouseout = function(){discordIcon.style.opacity=".78";};
 topPanel.appendChild(discordIcon);
