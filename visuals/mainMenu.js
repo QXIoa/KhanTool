@@ -25,11 +25,6 @@ topPanel.innerHTML =
 const discordIcon = document.createElement('img');
 discordIcon.src = discordUrl;
 discordIcon.style.cssText = "height:22px;width:22px;margin-left:auto;cursor:pointer;display:block;border-radius:5px;background:#e3f2ff;padding:2px;box-shadow:0 1.5px 6px #c1dcfa50;opacity:.78;transition:box-shadow .12s, opacity .15s;";
-discordIcon.onclick = function(e) { 
-    e.preventDefault();
-    e.stopPropagation();
-    window.open("https://discord.gg/PYNQfcDvZy", "_blank"); 
-};
 discordIcon.onmouseover = function(){discordIcon.style.opacity=".98";};
 discordIcon.onmouseout = function(){discordIcon.style.opacity=".78";};
 topPanel.appendChild(discordIcon);
@@ -121,48 +116,70 @@ menuPanel.querySelector('#khantoolCloseBtn').onclick = function () {
     menuPanel.style.display = "none"; 
 };
 
-topPanel.onclick = function (e) {
-    if(e.target === discordIcon || isDragging) return;
-    updateMenuPosition();
-    menuPanel.style.display = (menuPanel.style.display === "none" ? "flex" : "none");
-};
-
 let isDragging = false;
+let dragStarted = false;
 let dragOffset = [0, 0];
+let clickTimer = null;
 
-topPanel.onmousedown = function (e) {
-    if (e.target === discordIcon) return;
-    isDragging = true;
-    topPanel.style.cursor = "grabbing";
-    topPanel.style.boxShadow = "0 13px 33px #176bd266";
-    dragOffset = [e.clientX - topPanel.offsetLeft, e.clientY - topPanel.offsetTop];
-    document.body.style.userSelect = "none";
+discordIcon.addEventListener('click', function(e) {
     e.preventDefault();
-};
+    e.stopPropagation();
+    window.open("https://discord.gg/PYNQfcDvZy", "_blank");
+});
 
-document.onmouseup = function () {
-    if (isDragging) {
-        isDragging = false;
-        topPanel.style.cursor = "move";
-        topPanel.style.boxShadow = "0 6px 20px #2196f667";
-        document.body.style.userSelect = "";
+topPanel.addEventListener('mousedown', function(e) {
+    if (e.target === discordIcon) return;
+    
+    isDragging = true;
+    dragStarted = false;
+    dragOffset = [e.clientX - topPanel.offsetLeft, e.clientY - topPanel.offsetTop];
+    topPanel.style.cursor = "grabbing";
+    document.body.style.userSelect = "none";
+    
+    if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+    }
+    
+    e.preventDefault();
+});
+
+document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    
+    dragStarted = true;
+    topPanel.style.boxShadow = "0 13px 33px #176bd266";
+    
+    let x = Math.max(0, Math.min(e.clientX - dragOffset[0], window.innerWidth - topPanel.offsetWidth));
+    let y = Math.max(0, Math.min(e.clientY - dragOffset[1], window.innerHeight - topPanel.offsetHeight));
+    
+    topPanel.style.left = x + "px";
+    topPanel.style.top = y + "px";
+    
+    if (menuPanel.style.display === "flex") {
         updateMenuPosition();
     }
-};
+});
 
-document.onmousemove = function (e) {
-    if (isDragging) {
-        e.preventDefault();
-        let x = Math.max(0, Math.min(e.clientX - dragOffset[0], window.innerWidth - topPanel.offsetWidth));
-        let y = Math.max(0, Math.min(e.clientY - dragOffset[1], window.innerHeight - topPanel.offsetHeight));
-        topPanel.style.left = x + "px";
-        topPanel.style.top = y + "px";
-        
-        if (menuPanel.style.display === "flex") {
+document.addEventListener('mouseup', function() {
+    if (!isDragging) return;
+    
+    const wasDragStarted = dragStarted;
+    isDragging = false;
+    dragStarted = false;
+    topPanel.style.cursor = "move";
+    topPanel.style.boxShadow = "0 6px 20px #2196f667";
+    document.body.style.userSelect = "";
+    
+    if (!wasDragStarted) {
+        clickTimer = setTimeout(function() {
             updateMenuPosition();
-        }
+            menuPanel.style.display = (menuPanel.style.display === "none" ? "flex" : "none");
+        }, 10);
+    } else {
+        updateMenuPosition();
     }
-};
+});
 
 window.addEventListener('resize', function () {
     const currentLeft = parseInt(topPanel.style.left) || 30;
@@ -175,9 +192,5 @@ window.addEventListener('resize', function () {
         topPanel.style.top = (window.innerHeight - topPanel.offsetHeight) + "px";
     }
     
-    updateMenuPosition();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
     updateMenuPosition();
 });
