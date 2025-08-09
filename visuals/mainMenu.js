@@ -19,7 +19,7 @@ topPanel.innerHTML =
   `<img src="${logoUrl}" style="height:44px;width:44px;border-radius:15px;flex-shrink:0;box-shadow:0 4px 22px #176bd780;">
    <div style="display:flex;flex-direction:column;gap:6px;">
       <span style="font-size:1.37rem;color:#f6fcff;font-weight:900;letter-spacing:.10em;text-shadow:0 3px 22px #176bd768;">KHANTOOL</span>
-      <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Modificado por "One Prism"</span>
+      <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Painel autoral</span>
    </div>`;
 
 const discordIcon = document.createElement('img');
@@ -31,7 +31,7 @@ topPanel.appendChild(discordIcon);
 document.body.appendChild(topPanel);
 
 const menuPanel = document.createElement('div');
-menuPanel.style.cssText = "position:fixed;top:98px;left:50px;min-width:320px;max-width:99vw;background:rgba(239,248,255,.98);box-shadow:0 9px 38px #41a8ff22;border-radius:18px;z-index:10502;padding:20px 27px 20px 27px;display:none;flex-direction:column;gap:13px;font-family:Roboto,Arial,sans-serif;align-items:stretch;";
+menuPanel.style.cssText = "position:fixed;top:98px;left:50px;min-width:320px;max-width:99vw;background:rgba(239,248,255,.98);box-shadow:0 9px 38px #41a8ff22;border-radius:18px;z-index:10502;padding:20px 27px 20px 27px;display:flex;flex-direction:column;gap:13px;font-family:Roboto,Arial,sans-serif;align-items:stretch;";
 menuPanel.innerHTML =
   `<div style="width:100%;display:flex;align-items:center;margin-bottom:5px;">
      <span style="color:#115ea8;font-weight:800;font-size:1.21rem;flex:1;">Configurações</span>
@@ -194,3 +194,8 @@ window.addEventListener('resize', function () {
     
     updateMenuPosition();
 });
+
+setTimeout(function() {
+    updateMenuPosition();
+    menuPanel.style.display = "flex";
+}, 500);
