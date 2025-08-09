@@ -124,7 +124,7 @@ let clickTimer = null;
 discordIcon.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
-    window.open("https://discord.gg/PYNQfcDvZy", "_blank");
+    window.open("https://discord.gg/tdy2jCWja2", "_blank");
 });
 
 topPanel.addEventListener('mousedown', function(e) {
