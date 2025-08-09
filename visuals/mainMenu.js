@@ -14,24 +14,29 @@ if (!window.features) {
 }
 
 const topPanel = document.createElement('div');
-topPanel.style.cssText = "position:fixed;top:22px;left:30px;width:310px;height:60px;background:linear-gradient(94deg,#2196f3 0%,#176bd7 60%,#93cdfa 100%);z-index:10500;box-shadow:0 6px 20px #2196f667;display:flex;align-items:center;border-radius:15px;user-select:none;cursor:pointer;padding:0 24px 0 22px;gap:16px;";
+topPanel.style.cssText = "position:fixed;top:22px;left:30px;width:310px;height:60px;background:linear-gradient(94deg,#2196f3 0%,#176bd7 60%,#93cdfa 100%);z-index:10500;box-shadow:0 6px 20px #2196f667;display:flex;align-items:center;border-radius:15px;user-select:none;cursor:move;padding:0 24px 0 22px;gap:16px;";
 topPanel.innerHTML =
   `<img src="${logoUrl}" style="height:44px;width:44px;border-radius:15px;flex-shrink:0;box-shadow:0 4px 22px #176bd780;">
    <div style="display:flex;flex-direction:column;gap:6px;">
       <span style="font-size:1.37rem;color:#f6fcff;font-weight:900;letter-spacing:.10em;text-shadow:0 3px 22px #176bd768;">KHANTOOL</span>
       <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Painel autoral</span>
    </div>`;
+
 const discordIcon = document.createElement('img');
 discordIcon.src = discordUrl;
 discordIcon.style.cssText = "height:22px;width:22px;margin-left:auto;cursor:pointer;display:block;border-radius:5px;background:#e3f2ff;padding:2px;box-shadow:0 1.5px 6px #c1dcfa50;opacity:.78;transition:box-shadow .12s, opacity .15s;";
-discordIcon.onclick = function(e) { window.open("https://discord.gg/PYNQfcDvZy", "_blank"); e.stopPropagation(); };
+discordIcon.onclick = function(e) { 
+    e.preventDefault();
+    e.stopPropagation();
+    window.open("https://discord.gg/PYNQfcDvZy", "_blank"); 
+};
 discordIcon.onmouseover = function(){discordIcon.style.opacity=".98";};
 discordIcon.onmouseout = function(){discordIcon.style.opacity=".78";};
 topPanel.appendChild(discordIcon);
 document.body.appendChild(topPanel);
 
 const menuPanel = document.createElement('div');
-menuPanel.style.cssText = "position:fixed;top:98px;left:50px;min-width:320px;max-width:99vw;background:rgba(239,248,255,.98);box-shadow:0 9px 38px #41a8ff22;border-radius:18px;z-index:10502;padding:20px 27px 20px 27px;display:flex;flex-direction:column;gap:13px;font-family:Roboto,Arial,sans-serif;align-items:stretch;";
+menuPanel.style.cssText = "position:fixed;top:98px;left:50px;min-width:320px;max-width:99vw;background:rgba(239,248,255,.98);box-shadow:0 9px 38px #41a8ff22;border-radius:18px;z-index:10502;padding:20px 27px 20px 27px;display:none;flex-direction:column;gap:13px;font-family:Roboto,Arial,sans-serif;align-items:stretch;";
 menuPanel.innerHTML =
   `<div style="width:100%;display:flex;align-items:center;margin-bottom:5px;">
      <span style="color:#115ea8;font-weight:800;font-size:1.21rem;flex:1;">Configurações</span>
@@ -106,40 +111,73 @@ switchesList.forEach(sw => {
     switchesDiv.appendChild(wrap);
 });
 
-menuPanel.querySelector('#khantoolCloseBtn').onclick = function () { menuPanel.style.display = "none"; };
+function updateMenuPosition() {
+    const rect = topPanel.getBoundingClientRect();
+    menuPanel.style.left = (rect.left + 20) + "px";
+    menuPanel.style.top = (rect.bottom + 16) + "px";
+}
+
+menuPanel.querySelector('#khantoolCloseBtn').onclick = function () { 
+    menuPanel.style.display = "none"; 
+};
+
 topPanel.onclick = function (e) {
-    if(e.target === discordIcon) return;
+    if(e.target === discordIcon || isDragging) return;
+    updateMenuPosition();
     menuPanel.style.display = (menuPanel.style.display === "none" ? "flex" : "none");
 };
-menuPanel.style.display = "flex";
 
-let isDragging = false, dragOffset = [0, 0];
+let isDragging = false;
+let dragOffset = [0, 0];
+
 topPanel.onmousedown = function (e) {
     if (e.target === discordIcon) return;
     isDragging = true;
+    topPanel.style.cursor = "grabbing";
     topPanel.style.boxShadow = "0 13px 33px #176bd266";
     dragOffset = [e.clientX - topPanel.offsetLeft, e.clientY - topPanel.offsetTop];
     document.body.style.userSelect = "none";
+    e.preventDefault();
 };
+
 document.onmouseup = function () {
     if (isDragging) {
         isDragging = false;
+        topPanel.style.cursor = "move";
         topPanel.style.boxShadow = "0 6px 20px #2196f667";
         document.body.style.userSelect = "";
+        updateMenuPosition();
     }
 };
+
 document.onmousemove = function (e) {
     if (isDragging) {
+        e.preventDefault();
         let x = Math.max(0, Math.min(e.clientX - dragOffset[0], window.innerWidth - topPanel.offsetWidth));
         let y = Math.max(0, Math.min(e.clientY - dragOffset[1], window.innerHeight - topPanel.offsetHeight));
         topPanel.style.left = x + "px";
         topPanel.style.top = y + "px";
-        menuPanel.style.left = (x + 16) + "px";
-        menuPanel.style.top = (y + topPanel.offsetHeight + 8) + "px";
-        menuPanel.style.transform = "none";
+        
+        if (menuPanel.style.display === "flex") {
+            updateMenuPosition();
+        }
     }
 };
+
 window.addEventListener('resize', function () {
-    if (parseInt(topPanel.style.left) + topPanel.offsetWidth > window.innerWidth) topPanel.style.left = (window.innerWidth - topPanel.offsetWidth) + "px";
-    if (parseInt(topPanel.style.top) + topPanel.offsetHeight > window.innerHeight) topPanel.style.top = (window.innerHeight - topPanel.offsetHeight) + "px";
+    const currentLeft = parseInt(topPanel.style.left) || 30;
+    const currentTop = parseInt(topPanel.style.top) || 22;
+    
+    if (currentLeft + topPanel.offsetWidth > window.innerWidth) {
+        topPanel.style.left = (window.innerWidth - topPanel.offsetWidth) + "px";
+    }
+    if (currentTop + topPanel.offsetHeight > window.innerHeight) {
+        topPanel.style.top = (window.innerHeight - topPanel.offsetHeight) + "px";
+    }
+    
+    updateMenuPosition();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateMenuPosition();
 });
