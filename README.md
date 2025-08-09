@@ -1,19 +1,9 @@
 # 🔹 KhanTool
 ### O cheat mais avançado para a Khan Academy.
 
-🙂 Estável:
+🙂 Bookmarklet:
 ```js
 javascript:fetch("https://raw.githubusercontent.com/OnePrism0/KhanTool/refs/heads/main/KhanTool.js").then(t=>t.text()).then(eval);
-```
-
-🔧 Dev (beta):
-```js
-javascript:fetch("https://raw.githubusercontent.com/OnePrism0/KhanTool/refs/heads/main/KhanTool.js").then(t=>t.text()).then(eval);
-```
-
-🪶 Minimalista (beta):
-```js
-javascript:fetch("https://raw.githubusercontent.com/OnePrism0/KhanTool/refs/heads/main/khantoolMinimal.js").then(t=>t.text()).then(eval);
 ```
 
 Ao criar este repositório, concedo permissão para que todos usem meu código. No entanto, como ele está licenciado sob a GPL, quaisquer modificações ou distribuições também devem ser de código aberto.
@@ -33,3 +23,5 @@ Você deve ter recebido uma cópia da Licença Pública Geral GNU junto com este
     <img src="https://cdn.discordapp.com/emojis/1402363014849757284.webp?size=96" width="128px" height="128px" alt="HelloKittyByeBye">
   </a>
 </p>
+
+Créditos pelo código base ao "Nyx"!
