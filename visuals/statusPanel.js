@@ -2,7 +2,8 @@ Object.assign(statsPanel.style, {
     position: 'fixed',
     top: '92%',
     left: '18px',
-    width: '228px',
+    width: 'auto',
+    minWidth: '280px',
     height: '32px',
     background: 'rgba(21, 107, 215, 0.10)',
     color: '#1851a8',
@@ -16,9 +17,11 @@ Object.assign(statsPanel.style, {
     userSelect: 'none',
     zIndex: '1000',
     transition: 'transform 0.23s',
-    boxShadow: '0 2px 22px 0 rgba(28,81,164,0.18)',
+    boxShadow: '0 2px 22px 0 rgba(28,81,164,0.18), 0 0 15px rgba(23, 107, 215, 0.3), inset 0 0 15px rgba(23, 107, 215, 0.1)',
     backdropFilter: 'blur(1.5px)',
-    WebkitBackdropFilter: 'blur(1.5px)'
+    WebkitBackdropFilter: 'blur(1.5px)',
+    padding: '0 15px',
+    border: '1px solid rgba(23, 107, 215, 0.25)'
 });
 
 const getPing = async () => {
