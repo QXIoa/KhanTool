@@ -55,7 +55,7 @@ function setupMain(){
 (function () {
 const phrases = [
 "KhanTool: Aprenda no azul!",
-"KhanTool – entre para a comunidade: https://discord.gg/PYNQfcDvZy",
+"KhanTool – entre para a comunidade: https://discord.gg/tdy2jCWja2",
 "Dominando a Khan Academy — KhanTool.",
 "Avance suas conquistas com KhanTool.",
 "Mais poder, mais azul: KhanTool oficial.",
