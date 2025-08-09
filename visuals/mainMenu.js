@@ -1,103 +1,119 @@
-const logoUrl = "https://raw.githubusercontent.com/OnePrism0/KhanTool/main/logo.png";
-const discordUrl = "https://raw.githubusercontent.com/OnePrism0/KhanTool/main/discord.png";
+const setFeatureByPath = (path, value) => { let obj = window; const parts = path.split('.'); while (parts.length > 1) obj = obj[parts.shift()]; obj[parts[0]] = value; }
 
-const topPanel = document.createElement('div');
-topPanel.style.cssText = "position:fixed;top:22px;left:30px;width:310px;height:60px;background:linear-gradient(94deg,#2196f3 0%,#176bd7 60%,#93cdfa 100%);z-index:10500;box-shadow:0 6px 20px #2196f667;display:flex;align-items:center;border-radius:15px;user-select:none;cursor:pointer;padding:0 24px 0 22px;gap:16px;";
-topPanel.innerHTML =
-  `<img src="${logoUrl}" style="height:44px;width:44px;border-radius:15px;flex-shrink:0;box-shadow:0 4px 22px #176bd780;">
-   <div style="display:flex;flex-direction:column;gap:6px;">
-      <span style="font-size:1.37rem;color:#f6fcff;font-weight:900;letter-spacing:.10em;text-shadow:0 3px 22px #176bd768;">KHANTOOL</span>
-      <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Painel autoral</span>
-   </div>`;
-const discordIcon = document.createElement('img');
-discordIcon.src = discordUrl;
-discordIcon.style.cssText = "height:22px;width:22px;margin-left:auto;cursor:pointer;display:block;border-radius:5px;background:#e3f2ff;padding:2px;box-shadow:0 1.5px 6px #c1dcfa50;opacity:.78;transition:box-shadow .12s, opacity .15s;";
-discordIcon.onclick = function(e) { window.open("https://discord.gg/PYNQfcDvZy", "_blank"); e.stopPropagation(); };
-discordIcon.onmouseover = function(){discordIcon.style.opacity=".98";};
-discordIcon.onmouseout = function(){discordIcon.style.opacity=".78";};
-topPanel.appendChild(discordIcon);
-document.body.appendChild(topPanel);
+function addFeature(features) {
+const feature = document.createElement('feature');
+features.forEach(attribute => {
+let element = attribute.type === 'nonInput' ? document.createElement('label') : document.createElement('input');
+if (attribute.type === 'nonInput') element.innerHTML = attribute.name;
+else { element.type = attribute.type; element.id = attribute.name; }
+if (attribute.attributes) {
+attribute.attributes.split(' ').map(attr => attr.split('=')).forEach(([key, value]) => {
+value = value ? value.replace(/"/g, '') : '';
+key === 'style' ? element.style.cssText = value : element.setAttribute(key, value);
+});
+}
+if (attribute.variable) element.setAttribute('setting-data', attribute.variable);
+if (attribute.dependent) element.setAttribute('dependent', attribute.dependent);
+if (attribute.className) element.classList.add(attribute.className);
+if (attribute.labeled) {
+const label = document.createElement('label');
+if (attribute.className) label.classList.add(attribute.className);
+if (attribute.attributes) {
+attribute.attributes.split(' ').map(attr => attr.split('=')).forEach(([key, value]) => {
+value = value ? value.replace(/"/g, '') : '';
+key === 'style' ? label.style.cssText = value : label.setAttribute(key, value);
+});
+}
+label.innerHTML = `${element.outerHTML} ${attribute.label}`;
+feature.appendChild(label);
+} else {
+feature.appendChild(element);
+}
+});
+dropdownMenu.innerHTML += feature.outerHTML;
+}
 
-const menuPanel = document.createElement('div');
-menuPanel.style.cssText = "position:fixed;top:98px;left:50px;min-width:320px;max-width:99vw;background:rgba(239,248,255,.98);box-shadow:0 9px 38px #41a8ff22;border-radius:18px;z-index:10502;padding:20px 27px 20px 27px;display:flex;flex-direction:column;gap:13px;font-family:Roboto,Arial,sans-serif;align-items:stretch;";
-menuPanel.innerHTML =
-  `<div style="width:100%;display:flex;align-items:center;margin-bottom:5px;">
-     <span style="color:#115ea8;font-weight:800;font-size:1.21rem;flex:1;">Configurações</span>
-     <button id="khantoolCloseBtn" style="font-size:1.30rem;width:29px;aspect-ratio:1/1;border:none;background:none;cursor:pointer;color:#1976d2;border-radius:7px;background:rgba(226,239,254,.62);font-weight:700;">×</button>
-   </div>
-   <div id="khantoolSwitches" style="display:flex;flex-direction:column;gap:11px;padding:6px 0 2px 0;"></div>
-   <style>
-   .ktswitch{width:36px;height:18px;background:#c2e0fa;border-radius:13px;display:inline-block;position:relative;transition:background .13s;vertical-align:middle;}
-   .ktswitch>span{display:block;width:15px;height:15px;background:linear-gradient(120deg,#41a8ff 0%,#176bd7 90%);border-radius:17px;position:absolute;left:2px;top:2px;transition:all .15s;}
-   input[type="checkbox"]:checked+.ktswitch>span{left:17px;background:linear-gradient(135deg,#19baf0 0%,#41a8ff 62%);}
-   label:hover .ktswitch{background:#e2effa;}
-   #khantoolCloseBtn:hover{background:rgba(188,220,255,.88);}
-   </style>`;
-document.body.appendChild(menuPanel);
+function handleInput(ids, callback = null) {
+(Array.isArray(ids) ? ids.map(id => document.getElementById(id)) : [document.getElementById(ids)])
+.forEach(element => {
+if (!element) return;
+const setting = element.getAttribute('setting-data'),
+dependent = element.getAttribute('dependent'),
+handleEvent = (e, value) => {
+setFeatureByPath(setting, value);
+if (callback) callback(value, e);
+};
+if (element.type === 'checkbox') {
+element.addEventListener('change', (e) => {
+playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/5os0bypi.wav');
+handleEvent(e, e.target.checked);
+if (dependent) dependent.split(',').forEach(dep =>
+document.querySelectorAll(`.${dep}`).forEach(depEl =>
+depEl.style.display = e.target.checked ? null : "none"));
+});
+} else {
+element.addEventListener('input', (e) => handleEvent(e, e.target.value));
+}
+});
+}
 
-const switchesList = [
-    { id: "autoAnswer", text: "Respostas automáticas", var: "features.autoAnswer", checked: true },
-    { id: "questionSpoof", text: "Spoof de Questão", var: "features.questionSpoof", checked: true },
-    { id: "videoSpoof", text: "Vídeo Automático", var: "features.videoSpoof", checked: true },
-    { id: "minuteFarmer", text: "Farming de Minutos", var: "features.minuteFarmer", checked: false },
-    { id: "customBanner", text: "Banner Personalizado", var: "features.customBanner", checked: false },
-    { id: "rgbLogo", text: "RGB Logo", var: "features.rgbLogo", checked: false },
-    { id: "darkMode", text: "Modo Noturno", var: "features.darkMode", checked: true }
+Object.assign(watermark.style, {
+position: 'fixed', top: '0', left: '85%', width: '150px', height: '30px', backgroundColor: 'RGB(0,0,0,0.5)',
+color: 'white', fontSize: '15px', fontFamily: 'MuseoSans, sans-serif', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+cursor: 'default', userSelect: 'none', padding: '0 10px', borderRadius: '10px', zIndex: '1001', transition: 'transform 0.3s ease'
+});
+
+if (device.mobile) watermark.style.left = '55%'
+
+watermark.innerHTML = `KW ${ver}`;
+document.body.appendChild(watermark);
+
+let isDragging = false, offsetX, offsetY;
+
+watermark.addEventListener('mousedown', e => { if (!dropdownMenu.contains(e.target)) { isDragging = true; offsetX = e.clientX - watermark.offsetLeft; offsetY = e.clientY - watermark.offsetTop; watermark.style.transform = 'scale(0.9)'; } });
+watermark.addEventListener('mouseup', () => { isDragging = false; watermark.style.transform = 'scale(1)'; });
+document.addEventListener('mousemove', e => { if (isDragging) { let newX = Math.max(0, Math.min(e.clientX - offsetX, window.innerWidth - watermark.offsetWidth)); let newY = Math.max(0, Math.min(e.clientY - offsetY, window.innerHeight - watermark.offsetHeight)); Object.assign(watermark.style, { left: `${newX}px`, top: `${newY}px` }); dropdownMenu.style.display = 'none'; } });
+
+Object.assign(dropdownMenu.style, {
+position: 'absolute', top: '100%', left: '0', width: '160px', backgroundColor: 'rgba(0,0,0,0.3)',
+borderRadius: '10px', color: 'white', fontSize: '13px', fontFamily: 'Monospace, sans-serif',
+display: 'none', flexDirection: 'column', zIndex: '1000', padding: '5px', cursor: 'default',
+userSelect: 'none', transition: 'transform 0.3s ease', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)'
+});
+
+watermark.appendChild(dropdownMenu);
+
+let featuresList = [
+{ name: 'questionSpoof', type: 'checkbox', variable: 'features.questionSpoof', attributes: 'checked', labeled: true, label: 'Question Spoof' },
+{ name: 'videoSpoof', type: 'checkbox', variable: 'features.videoSpoof', attributes: 'checked', labeled: true, label: 'Video Spoof' },
+{ name: 'showAnswers', type: 'checkbox', variable: 'features.showAnswers', labeled: true, label: 'Answer Revealer' },
+{ name: 'autoAnswer', type: 'checkbox', variable: 'features.autoAnswer', dependent: 'autoAnswerDelay,nextRecomendation,repeatQuestion', labeled: true, label: 'Auto Answer' },
+{ name: 'repeatQuestion', className: 'repeatQuestion', type: 'checkbox', variable: 'features.repeatQuestion', attributes: 'style="display:none;"', labeled: true, label: 'Repeat Question' },
+{ name: 'nextRecomendation', className: 'nextRecomendation', type: 'checkbox', variable: 'features.nextRecomendation', attributes: 'style="display:none;"', labeled: true, label: 'Recomendations' },
+{ name: 'autoAnswerDelay', className: 'autoAnswerDelay', type: 'range', variable: 'features.autoAnswerDelay', attributes: 'style="display:none;" min="1" max="3" value="1"', labeled: false },
+{ name: 'minuteFarm', type: 'checkbox', variable: 'features.minuteFarmer', labeled: true, label: 'Minute Farmer' },
+{ name: 'customBanner', type: 'checkbox', variable: 'features.customBanner', labeled: true, label: 'Custom Banner' },
+{ name: 'rgbLogo', type: 'checkbox', variable: 'features.rgbLogo', labeled: true, label: 'RGB Logo' },
+{ name: 'darkMode', type: 'checkbox', variable: 'features.darkMode', attributes: 'checked', labeled: true, label: 'Dark Mode' },
+{ name: 'onekoJs', type: 'checkbox', variable: 'features.onekoJs', labeled: true, label: 'onekoJs' },
+{ name: 'Custom Username', type: 'nonInput' },
+{ name: 'customName', type: 'text', variable: 'featureConfigs.customUsername', attributes: 'autocomplete="off"' },
+{ name: 'Custom pfp', type: 'nonInput' },
+{ name: 'customPfp', type: 'text', variable: 'featureConfigs.customPfp', attributes: 'autocomplete="off"' }
 ];
-const switchesDiv = menuPanel.querySelector('#khantoolSwitches');
-switchesList.forEach(sw => {
-    const wrap = document.createElement('label');
-    wrap.style.cssText = "display:flex;align-items:center;justify-content:space-between;font-size:1.09rem;color:#124c8c;font-weight:670;gap:17px;cursor:pointer;";
-    wrap.innerHTML = `<span>${sw.text}</span><input type="checkbox" id="${sw.id}" style="display:none;"><span class="ktswitch"><span></span></span>`;
-    const cb = wrap.querySelector('input[type=checkbox]');
-    cb.checked = sw.checked;
-    wrap.onclick = function(e) {
-        if (e.target.tagName !== "INPUT" && e.target.className !== "ktswitch" && e.target.tagName !== "SPAN")
-            { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
-    };
-    wrap.querySelector('.ktswitch').onclick = function(e) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); e.stopPropagation(); };
-    cb.onchange = function () {
-        window[sw.var] = cb.checked;
-        if(typeof khantoolNotif==="function"){ khantoolNotif({text: `${sw.text} ${cb.checked ? "ativado" : "desativado"}!`, icon: "", color: cb.checked?"#176bd7":"#bbbbbb", time: 850 }); }
-    };
-    window[sw.var] = cb.checked;
-    switchesDiv.appendChild(wrap);
-});
 
-menuPanel.querySelector('#khantoolCloseBtn').onclick = function () { menuPanel.style.display = "none"; };
-topPanel.onclick = function (e) {
-    if(e.target === discordIcon) return;
-    menuPanel.style.display = (menuPanel.style.display === "none" ? "flex" : "none");
-};
-menuPanel.style.display = "flex";
+featuresList.push({ name: `${user.username} - UID: ${user.UID}`, type: 'nonInput', attributes: 'style="font-size:10px;"padding-left:5px;' });
 
-let isDragging = false, dragOffset = [0, 0];
-topPanel.onmousedown = function (e) {
-    if (e.target === discordIcon) return;
-    isDragging = true;
-    topPanel.style.boxShadow = "0 13px 33px #176bd266";
-    dragOffset = [e.clientX - topPanel.offsetLeft, e.clientY - topPanel.offsetTop];
-    document.body.style.userSelect = "none";
-};
-document.onmouseup = function () {
-    if (isDragging) {
-        isDragging = false;
-        topPanel.style.boxShadow = "0 6px 20px #2196f667";
-        document.body.style.userSelect = "";
-    }
-};
-document.onmousemove = function (e) {
-    if (isDragging) {
-        let x = Math.max(0, Math.min(e.clientX - dragOffset[0], window.innerWidth - topPanel.offsetWidth));
-        let y = Math.max(0, Math.min(e.clientY - dragOffset[1], window.innerHeight - topPanel.offsetHeight));
-        topPanel.style.left = x + "px";
-        topPanel.style.top = y + "px";
-        menuPanel.style.left = (x + 16) + "px";
-        menuPanel.style.top = (y + topPanel.offsetHeight + 8) + "px";
-        menuPanel.style.transform = "none";
-    }
-};
-window.addEventListener('resize', function () {
-    if (parseInt(topPanel.style.left) + topPanel.offsetWidth > window.innerWidth) topPanel.style.left = (window.innerWidth - topPanel.offsetWidth) + "px";
-    if (parseInt(topPanel.style.top) + topPanel.offsetHeight > window.innerHeight) topPanel.style.top = (window.innerHeight - topPanel.offsetHeight) + "px";
-});
+addFeature(featuresList);
+
+setTimeout(() => {
+handleInput(['questionSpoof', 'videoSpoof', 'showAnswers', 'nextRecomendation', 'repeatQuestion', 'minuteFarm', 'customBanner', 'rgbLogo']);
+handleInput(['customName', 'customPfp']);
+handleInput('autoAnswer', checked => checked && !features.questionSpoof && (document.querySelector('[setting-data="features.questionSpoof"]').checked = features.questionSpoof = true));
+handleInput('autoAnswerDelay', value => value && (featureConfigs.autoAnswerDelay = 4 - value));
+handleInput('darkMode', checked => checked ? (DarkReader.setFetchMethod(window.fetch), DarkReader.enable()) : DarkReader.disable());
+handleInput('onekoJs', checked => { onekoEl = document.getElementById('oneko'); if (onekoEl) {onekoEl.style.display = checked ? null : "none"} });
+}, 100);
+
+watermark.addEventListener('mouseenter', () => { dropdownMenu.style.display = 'flex'; playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/3kd01iyj.wav'); });
+watermark.addEventListener('mouseleave', e => { !watermark.contains(e.relatedTarget) && (dropdownMenu.style.display = 'none'); playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/rqizlm03.wav'); });
