@@ -9,6 +9,7 @@ const baseSelectors = [
 let lastActionTime = 0;
 let isProcessing = false;
 let toastCooldown = false;
+let answerSelected = false;
 
 if (features.autoAnswer) {
     khanwareDominates = true;
@@ -21,74 +22,73 @@ if (features.autoAnswer) {
             }
             
             const currentTime = Date.now();
-            if (currentTime - lastActionTime < 800) {
+            if (currentTime - lastActionTime < 600) {
                 await delay(200);
                 continue;
             }
             
             let actionTaken = false;
-            const selectorsToCheck = [...baseSelectors];
             
-            for (const selector of selectorsToCheck) {
-                const element = document.querySelector(selector);
-                if (element && element.offsetParent !== null) {
-                    
-                    if (selector === `[data-testid="choice-icon__library-choice-icon"]`) {
-                        const correctChoice = document.querySelector(`[data-testid="choice-icon__library-choice-icon"][aria-label*="correta"]`) || 
-                                            document.querySelector(`[data-testid="choice-icon__library-choice-icon"]:first-of-type`);
-                        if (correctChoice) {
-                            correctChoice.click();
-                            actionTaken = true;
-                            lastActionTime = currentTime;
-                            break;
+            const correctChoice = document.querySelector(`[data-testid="choice-icon__library-choice-icon"]`);
+            const checkButton = document.querySelector(`[data-testid="exercise-check-answer"]`);
+            const nextButton = document.querySelector(`[data-testid="exercise-next-question"]`);
+            
+            if (correctChoice && !answerSelected && correctChoice.offsetParent !== null) {
+                correctChoice.click();
+                answerSelected = true;
+                actionTaken = true;
+                lastActionTime = currentTime;
+            }
+            else if (checkButton && answerSelected && checkButton.offsetParent !== null) {
+                checkButton.click();
+                answerSelected = false;
+                actionTaken = true;
+                lastActionTime = currentTime;
+            }
+            else if (nextButton && nextButton.offsetParent !== null) {
+                const buttonText = nextButton.textContent || nextButton.innerText || "";
+                
+                if (buttonText.includes("Mostrar resumo") || buttonText.includes("Ver resumo")) {
+                    if (!toastCooldown) {
+                        toastCooldown = true;
+                        isProcessing = true;
+                        
+                        if (typeof sendToast === 'function') {
+                            sendToast("🎉 Exercício concluído!", 2000);
                         }
+                        
+                        if (typeof playAudio === 'function') {
+                            playAudio("https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/4x5g14gj.wav");
+                        }
+                        
+                        setTimeout(() => {
+                            nextButton.click();
+                            setTimeout(() => {
+                                isProcessing = false;
+                                toastCooldown = false;
+                                answerSelected = false;
+                            }, 3000);
+                        }, 1500);
                     }
-                    
-                    else if (selector === `[data-testid="exercise-check-answer"]`) {
-                        element.click();
-                        actionTaken = true;
-                        lastActionTime = currentTime;
-                        break;
-                    }
-                    
-                    else if (selector === `[data-testid="exercise-next-question"]`) {
-                        element.click();
-                        actionTaken = true;
-                        lastActionTime = currentTime;
-                        break;
-                    }
-                    
-                    else {
-                        element.click();
-                        actionTaken = true;
-                        lastActionTime = currentTime;
-                        break;
-                    }
+                } else {
+                    nextButton.click();
+                    answerSelected = false;
+                    actionTaken = true;
+                    lastActionTime = currentTime;
                 }
             }
             
-            const summaryButton = document.querySelector(`[data-testid="exercise-next-question"]`);
-            const summaryText = summaryButton?.textContent || summaryButton?.innerText || "";
-            
-            if ((summaryText.includes("Mostrar resumo") || summaryText.includes("Ver resumo")) && !toastCooldown) {
-                toastCooldown = true;
-                isProcessing = true;
-                
-                if (typeof sendToast === 'function') {
-                    sendToast("🎉 Exercício concluído!", 2000);
+            const otherSelectors = [`._1udzurba`, `._awve9b`];
+            if (!actionTaken) {
+                for (const selector of otherSelectors) {
+                    const element = document.querySelector(selector);
+                    if (element && element.offsetParent !== null) {
+                        element.click();
+                        actionTaken = true;
+                        lastActionTime = currentTime;
+                        break;
+                    }
                 }
-                
-                if (typeof playAudio === 'function') {
-                    playAudio("https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/4x5g14gj.wav");
-                }
-                
-                setTimeout(() => {
-                    summaryButton?.click();
-                    setTimeout(() => {
-                        isProcessing = false;
-                        toastCooldown = false;
-                    }, 3000);
-                }, 1500);
             }
             
             const completionIndicators = [
@@ -111,7 +111,7 @@ if (features.autoAnswer) {
                 }
             }
             
-            await delay(actionTaken ? 600 : 300);
+            await delay(actionTaken ? 800 : 400);
         }
     })();
 }
