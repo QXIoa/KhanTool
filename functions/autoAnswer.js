@@ -10,12 +10,45 @@ let lastActionTime = 0;
 let isProcessing = false;
 let toastCooldown = false;
 let answerSelected = false;
+let scriptInitialized = false;
+let consecutiveFailures = 0;
+
+function resetState() {
+    answerSelected = false;
+    isProcessing = false;
+    consecutiveFailures = 0;
+    lastActionTime = 0;
+}
+
+function waitForPageReady() {
+    return new Promise((resolve) => {
+        if (document.readyState === 'complete') {
+            resolve();
+        } else {
+            window.addEventListener('load', resolve, { once: true });
+        }
+    });
+}
 
 if (features.autoAnswer) {
     khanwareDominates = true;
     
     (async () => {
+        await waitForPageReady();
+        
+        setTimeout(() => {
+            scriptInitialized = true;
+            if (typeof sendToast === 'function') {
+                sendToast("🤖 AutoAnswer ativado!", 1000);
+            }
+        }, 1000);
+        
         while (khanwareDominates) {
+            if (!scriptInitialized) {
+                await delay(100);
+                continue;
+            }
+            
             if (isProcessing) {
                 await delay(500);
                 continue;
@@ -34,18 +67,32 @@ if (features.autoAnswer) {
             const nextButton = document.querySelector(`[data-testid="exercise-next-question"]`);
             
             if (correctChoice && !answerSelected && correctChoice.offsetParent !== null) {
-                correctChoice.click();
-                answerSelected = true;
-                actionTaken = true;
-                lastActionTime = currentTime;
+                try {
+                    correctChoice.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    await delay(200);
+                    correctChoice.click();
+                    answerSelected = true;
+                    actionTaken = true;
+                    lastActionTime = currentTime;
+                    consecutiveFailures = 0;
+                } catch (e) {
+                    consecutiveFailures++;
+                }
             }
-            else if (checkButton && answerSelected && checkButton.offsetParent !== null) {
-                checkButton.click();
-                answerSelected = false;
-                actionTaken = true;
-                lastActionTime = currentTime;
+            else if (checkButton && answerSelected && checkButton.offsetParent !== null && !checkButton.disabled) {
+                try {
+                    checkButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    await delay(200);
+                    checkButton.click();
+                    answerSelected = false;
+                    actionTaken = true;
+                    lastActionTime = currentTime;
+                    consecutiveFailures = 0;
+                } catch (e) {
+                    consecutiveFailures++;
+                }
             }
-            else if (nextButton && nextButton.offsetParent !== null) {
+            else if (nextButton && nextButton.offsetParent !== null && !nextButton.disabled) {
                 const buttonText = nextButton.textContent || nextButton.innerText || "";
                 
                 if (buttonText.includes("Mostrar resumo") || buttonText.includes("Ver resumo")) {
@@ -62,19 +109,30 @@ if (features.autoAnswer) {
                         }
                         
                         setTimeout(() => {
-                            nextButton.click();
-                            setTimeout(() => {
-                                isProcessing = false;
+                            try {
+                                nextButton.click();
+                                setTimeout(() => {
+                                    resetState();
+                                    toastCooldown = false;
+                                }, 3000);
+                            } catch (e) {
+                                resetState();
                                 toastCooldown = false;
-                                answerSelected = false;
-                            }, 3000);
+                            }
                         }, 1500);
                     }
                 } else {
-                    nextButton.click();
-                    answerSelected = false;
-                    actionTaken = true;
-                    lastActionTime = currentTime;
+                    try {
+                        nextButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        await delay(200);
+                        nextButton.click();
+                        answerSelected = false;
+                        actionTaken = true;
+                        lastActionTime = currentTime;
+                        consecutiveFailures = 0;
+                    } catch (e) {
+                        consecutiveFailures++;
+                    }
                 }
             }
             
@@ -82,11 +140,18 @@ if (features.autoAnswer) {
             if (!actionTaken) {
                 for (const selector of otherSelectors) {
                     const element = document.querySelector(selector);
-                    if (element && element.offsetParent !== null) {
-                        element.click();
-                        actionTaken = true;
-                        lastActionTime = currentTime;
-                        break;
+                    if (element && element.offsetParent !== null && !element.disabled) {
+                        try {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            await delay(200);
+                            element.click();
+                            actionTaken = true;
+                            lastActionTime = currentTime;
+                            consecutiveFailures = 0;
+                            break;
+                        } catch (e) {
+                            consecutiveFailures++;
+                        }
                     }
                 }
             }
@@ -105,13 +170,42 @@ if (features.autoAnswer) {
                         if (typeof sendToast === 'function') {
                             sendToast("✅ Atividade finalizada!", 2000);
                         }
-                        setTimeout(() => { toastCooldown = false; }, 5000);
+                        setTimeout(() => { 
+                            toastCooldown = false;
+                            resetState();
+                        }, 5000);
                     }
                     break;
                 }
+            }
+            
+            if (consecutiveFailures > 10) {
+                resetState();
+                await delay(2000);
+                if (typeof sendToast === 'function') {
+                    sendToast("🔄 AutoAnswer reiniciado!", 1000);
+                }
+            }
+            
+            if (!features.autoAnswer) {
+                khanwareDominates = false;
+                break;
             }
             
             await delay(actionTaken ? 800 : 400);
         }
     })();
 }
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && features.autoAnswer) {
+        resetState();
+        setTimeout(() => {
+            scriptInitialized = true;
+        }, 500);
+    }
+});
+
+window.addEventListener('beforeunload', () => {
+    resetState();
+});
