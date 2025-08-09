@@ -19,7 +19,7 @@ topPanel.innerHTML =
   `<img src="${logoUrl}" style="height:44px;width:44px;border-radius:15px;flex-shrink:0;box-shadow:0 4px 22px #176bd780;">
    <div style="display:flex;flex-direction:column;gap:6px;">
       <span style="font-size:1.37rem;color:#f6fcff;font-weight:900;letter-spacing:.10em;text-shadow:0 3px 22px #176bd768;">KHANTOOL</span>
-      <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Painel autoral</span>
+      <span style="color:#eaf4fe;opacity:.82;font-size:1.09rem;font-weight:400;">Desenvolvido por One Prism</span>
    </div>`;
 
 const discordIcon = document.createElement('img');
