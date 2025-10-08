@@ -186,11 +186,6 @@ function setupMain() {
 }
 
 (async function(){
-    if (!/^https?:\/\/([a-z0-9-]+\.)?khanacademy\.org/.test(window.location.href)) {
-        alert("KhanTool só pode ser executado na Khan Academy: https://pt.khanacademy.org/");
-        window.location.href = "https://pt.khanacademy.org/";
-        return;
-    }
     await showSplashScreen();
     await loadScript('https://cdn.jsdelivr.net/npm/darkreader@4.9.92/darkreader.min.js', 'darkReaderPlugin');
     if (window.DarkReader) { DarkReader.setFetchMethod(window.fetch); DarkReader.enable(); }
@@ -204,8 +199,8 @@ function setupMain() {
             onekoEl.style.display = "none";
         }
     },1000);
-    fetch("https://pt.khanacademy.org/api/internal/graphql/getFullUserProfile", {
-        referrer: "https://pt.khanacademy.org/profile/me",
+    fetch("https://khanacademy.org/api/internal/graphql/getFullUserProfile", {
+        referrer: "https://khanacademy.org/profile/me",
         body: '{"operationName":"getFullUserProfile","query":"query getFullUserProfile($kaid: String, $username: String) {\\n  user(kaid: $kaid, username: $username) {\\n    id\\n    nickname\\n    username\\n  }\\n}"}',
         method: "POST",
         mode: "cors",
@@ -217,17 +212,14 @@ function setupMain() {
         }
     });
     sendToast("KhanTool injected successfully!");
-    await delay(500);
-    if (device.apple) { await delay(500); sendToast(`Que tal comprar um Samsung?`); }
+    await delay(500)
     loadedPlugins.forEach(plugin => sendToast(`${plugin} Loaded!`, 2000, 'top'));
     hideSplashScreen();
     setupMenu();
     setupMain();
     console.clear();
-    if(!device.mobile){
         const script = Object.assign(document.createElement('script'),
         {src:'https://cdn.jsdelivr.net/npm/@widgetbot/crate@3',async:true,onload:()=>{const discEmbed=new Crate({server:'1298477766290837554',channel:'1310975104460656662',location:['bottom','right'],notifications:true,indicator:true,allChannelNotifications:true,defer:false,color:'#2480db'});plppdo.on('domChanged',()=>window.location.href.includes("khanacademy.org/profile")?discEmbed.show():discEmbed.hide());}});
-        document.body.appendChild(script);
-    }
+         document.body.appendChild(script);
 })();
 
