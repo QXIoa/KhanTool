@@ -216,10 +216,8 @@ function setupMain() {
             user = { nickname: data.data.user.nickname, username: data.data.user.username, UID: data.data.user.id.slice(-5) };
         }
     });
-    sendToast("KhanTool injetado com sucesso!");
-    playAudio('https://r2.e-z.host/4d0a0bea-60f8-44d6-9e74-3032a64a9f32/gcelzszy.wav');
+    sendToast("KhanTool injected successfully!");
     await delay(500);
-    sendToast(`Bem vindo(a) de volta: ${user.nickname}`);
     if (device.apple) { await delay(500); sendToast(`Que tal comprar um Samsung?`); }
     loadedPlugins.forEach(plugin => sendToast(`${plugin} Loaded!`, 2000, 'top'));
     hideSplashScreen();
@@ -232,3 +230,4 @@ function setupMain() {
         document.body.appendChild(script);
     }
 })();
+
